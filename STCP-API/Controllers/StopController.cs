@@ -8,8 +8,9 @@ namespace STCP_API.Controllers
     [Route("[controller]")]
     public class StopController : Controller
     {
-        // GET stop/{id}
-        public async Task<string> GetNextBuses(string id)
+        // GET stop/get/{id}
+        [HttpGet("get/{id}")]
+        public async Task<string> Get(string id)
         {
             var result = await StopClient.GetNextBuses(id);
 

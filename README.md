@@ -1,4 +1,4 @@
-# 🚌🚏 Unnoficial STCP API - Porto (PT) buses
+# 🚌🚏 Unofficial STCP API - Porto (PT) buses
 
 This software aims to create an unofficial API for STCP buses in the Porto metropolitan area.
 

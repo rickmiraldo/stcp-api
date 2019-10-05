@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using STCP_API.Clients;
+using System;
 using System.Threading.Tasks;
 
 namespace STCP_API.Controllers
@@ -12,9 +13,15 @@ namespace STCP_API.Controllers
         [HttpGet("get/{id}")]
         public async Task<string> Get(string id)
         {
-            var result = await StopClient.GetNextBuses(id);
-
-            return result.ToString();
+            try
+            {
+                var result = await StopClient.GetNextBuses(id);
+                return result.ToString();
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 }

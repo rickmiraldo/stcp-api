@@ -19,10 +19,16 @@ namespace STCP_API.Clients
         private const string noBusesMessage = "Nao ha autocarros previstos para a paragem indicada nos proximos 60 minutos";
 
         public static async Task<Stop> GetNextBuses(string stopName)
-        // TO-DO Change return type to Stop
         {
             HttpClient client = new HttpClient();
             var response = await client.GetAsync(stcpEndpoint + stopName);
+
+            // Check if page returned HTTP code 200
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new HttpRequestException("Error reading page: " + (int)response.StatusCode + " " + response.StatusCode.ToString());
+            }
+
             var pageContents = await response.Content.ReadAsStringAsync();
 
             HtmlDocument pageDocument = new HtmlDocument();
@@ -30,28 +36,27 @@ namespace STCP_API.Clients
 
             var resultsCheck = pageDocument.DocumentNode.SelectSingleNode(resultsFilter);
 
-            if (resultsCheck == null)
+            try
             {
-                try
+                if (resultsCheck == null)
                 {
+                    // Check for warning messags on page
                     var warningCheck = pageDocument.DocumentNode.SelectSingleNode(warningFilter).InnerText;
                     FilterWarning(warningCheck, stopName);
                 }
-                catch (Exception ex)
-                {
-                    throw ex; // TO-DO Generate friendly error pages
-                }
+                var incomingBuses = new List<IncomingBus>();
+                incomingBuses = FindIncomingBuses(resultsCheck.OuterHtml);
+
+                var busStop = new Stop();
+                busStop.Name = stopName;
+                busStop.IncomingBuses = incomingBuses;
+
+                return busStop;
             }
-
-            var incomingBuses = new List<IncomingBus>();
-            incomingBuses = FindIncomingBuses(resultsCheck.OuterHtml);
-
-            var busStop = new Stop();
-
-            busStop.Name = stopName;
-            busStop.IncomingBuses = incomingBuses;
-
-            return busStop;
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private static void FilterWarning(string warningCheck, string stopName)

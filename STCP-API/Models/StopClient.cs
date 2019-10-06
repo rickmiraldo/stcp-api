@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace STCP_API.Clients
+namespace STCP_API.Models
 {
     public static class StopClient
     {

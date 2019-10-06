@@ -10,8 +10,8 @@ namespace STCP_API.Controllers
     public class StopController : Controller
     {
         // GET stop/get/{id}
-        [HttpGet("get/{id}")]
-        public async Task<IActionResult> Get(string id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetBusesFromStop(string id)
         {
             try
             {
@@ -20,7 +20,7 @@ namespace STCP_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
     }

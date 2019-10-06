@@ -48,7 +48,7 @@ namespace STCP_API.Models
                 incomingBuses = FindIncomingBuses(resultsCheck.OuterHtml);
 
                 var busStop = new Stop();
-                busStop.Name = stopName;
+                busStop.BusStopName = stopName;
                 busStop.IncomingBuses = incomingBuses;
 
                 return busStop;

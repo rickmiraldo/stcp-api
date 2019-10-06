@@ -5,14 +5,14 @@ namespace STCP_API.Entities
 {
     public class Stop
     {
-        public string Name { get; set; }
+        public string BusStopName { get; set; }
 
         public List<IncomingBus> IncomingBuses { get; set; }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(Name);
+            sb.Append(BusStopName);
             sb.Append("\r\n=====\r\n");
             foreach (var bus in IncomingBuses)
             {

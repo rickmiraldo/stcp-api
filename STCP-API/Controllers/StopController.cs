@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using STCP_API.Clients;
+using STCP_API.Models;
 using System;
 using System.Threading.Tasks;
 
@@ -11,16 +11,16 @@ namespace STCP_API.Controllers
     {
         // GET stop/get/{id}
         [HttpGet("get/{id}")]
-        public async Task<string> Get(string id)
+        public async Task<IActionResult> Get(string id)
         {
             try
             {
                 var result = await StopClient.GetNextBuses(id);
-                return result.ToString();
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                return NotFound(ex.Message);
             }
         }
     }

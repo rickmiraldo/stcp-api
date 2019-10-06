@@ -43,13 +43,12 @@ namespace STCP_API.Models
                     // Check for warning messags on page
                     var warningCheck = pageDocument.DocumentNode.SelectSingleNode(warningFilter).InnerText;
                     FilterWarning(warningCheck, stopName);
+                    throw new InvalidTableException(stopName);
                 }
                 var incomingBuses = new List<IncomingBus>();
                 incomingBuses = FindIncomingBuses(resultsCheck.OuterHtml);
 
-                var busStop = new Stop();
-                busStop.BusStopName = stopName;
-                busStop.IncomingBuses = incomingBuses;
+                var busStop = new Stop(stopName, incomingBuses);
 
                 return busStop;
             }
@@ -69,7 +68,6 @@ namespace STCP_API.Models
             {
                 throw new NoBusesException(stopName);
             }
-            throw new InvalidTableException(stopName);
         }
 
         private static List<IncomingBus> FindIncomingBuses(string htmlTable)
@@ -81,8 +79,6 @@ namespace STCP_API.Models
 
             for (int i = 1; i < splitNumber.Length; i++)
             {
-                var bus = new IncomingBus();
-
                 // TO-DO Validate for night buses
                 var lineNumber = splitNumber[i].Substring(0, splitNumber[i].IndexOf('"')).TrimEnd();
 
@@ -96,17 +92,21 @@ namespace STCP_API.Models
 
                 bool aPassar = false;
 
-                DateTime time = new DateTime();
-
                 // Watch out for different response when less than 1 minute remaining
-                if (!timeString.Contains("a passar"))
+                if (timeString.Contains("a passar"))
                 {
-                    DateTime.TryParse(timeString, out time);
-                }
-                else
-                {
-                    time = DateTime.Now;
+                    timeString = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString();
                     aPassar = true;
+                }
+
+                DateTime time = new DateTime();
+                DateTime.TryParse(timeString, out time);
+
+                // TO-DO Validate if the code below works
+                // Check if it's past midnight, adjust date accordingly
+                if (DateTime.Now.Hour <= 23 && time.Hour == 0)
+                {
+                    time = time.AddDays(1);
                 }
 
                 // Fourth filter - Get waiting time
@@ -120,10 +120,7 @@ namespace STCP_API.Models
                     waitTime = int.Parse(splitWait[1].Substring(0, splitWait[1].IndexOf('m')));
                 }
 
-                bus.LineNumber = lineNumber;
-                bus.LineName = lineName;
-                bus.EstimatedTime = time;
-                bus.WaitingTime = waitTime;
+                var bus = new IncomingBus(lineNumber, lineName, time, waitTime);
 
                 incomingBuses.Add(bus);
             }

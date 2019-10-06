@@ -5,13 +5,18 @@ namespace STCP_API.Entities
 {
     public class IncomingBus
     {
-        public string LineNumber { get; set; }
-
-        public string LineName { get; set; }
-
+        public string LineNumber { get; private set; }
+        public string LineName { get; private set; }
         public DateTime EstimatedTime { get; set; }
-
         public int WaitingTime { get; set; }
+
+        public IncomingBus(string lineNumber, string lineName, DateTime estimatedTime, int waitingTime)
+        {
+            LineNumber = lineNumber;
+            LineName = lineName;
+            EstimatedTime = estimatedTime;
+            WaitingTime = waitingTime;
+        }
 
         public override string ToString()
         {

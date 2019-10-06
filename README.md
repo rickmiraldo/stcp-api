@@ -12,7 +12,7 @@ Built with .Net Core 3.
 
 To get all buses from a stop use this API call:
 
-`<server>:<port>/stop/get/<code>`
+`<server>:<port>/stop/<code>`
 
 Where `<code>` is the bus stop code such as CMIC1 or LION1
 

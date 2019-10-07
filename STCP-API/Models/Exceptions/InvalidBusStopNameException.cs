@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace STCP_API.Exceptions
+namespace STCP_API.Models.Exceptions
 {
     public class InvalidBusStopNameException : Exception
     {

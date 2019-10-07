@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Text;
 
-namespace STCP_API.Entities
+namespace STCP_API.Models.Entities
 {
     public class Line
     {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using STCP_API.Models;
+using STCP_API.Models.Clients;
 using System;
 using System.Threading.Tasks;
 

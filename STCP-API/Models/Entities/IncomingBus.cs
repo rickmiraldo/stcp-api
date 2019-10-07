@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace STCP_API.Entities
+namespace STCP_API.Models.Entities
 {
     public class IncomingBus
     {

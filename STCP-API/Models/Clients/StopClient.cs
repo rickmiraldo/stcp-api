@@ -1,12 +1,12 @@
 ﻿using HtmlAgilityPack;
-using STCP_API.Entities;
-using STCP_API.Exceptions;
+using STCP_API.Models.Entities;
+using STCP_API.Models.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace STCP_API.Models
+namespace STCP_API.Models.Clients
 {
     public static class StopClient
     {

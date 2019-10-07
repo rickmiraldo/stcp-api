@@ -7,7 +7,8 @@ namespace STCP_API.Controllers
     [Route("[controller]")]
     public class LineController : Controller
     {
-        [HttpGet("{id}")]
+        // GET line/{lineNumber}
+        [HttpGet("{lineNumber}")]
         public async Task<IActionResult> GetAllStopsFromLine(string lineNumber)
         {
             return View();

@@ -18,7 +18,7 @@ namespace STCP_API.Models.Clients
         private const string invalidStopMessage = "Por favor, utilize o codigo SMSBUS indicado na placa da paragem";
         private const string noBusesMessage = "Nao ha autocarros previstos para a paragem indicada nos proximos 60 minutos";
 
-        public static async Task<Stop> GetNextBuses(string stopName)
+        public static async Task<Stop> GetNextBuses(string stopName, string busStopName = "", string zone = "")
         {
             HttpClient client = new HttpClient();
             var response = await client.GetAsync(stcpEndpoint + stopName);
@@ -49,7 +49,7 @@ namespace STCP_API.Models.Clients
                     else if (warningCheck.Contains(noBusesMessage))
                     {
                         var incomingBuses = new List<IncomingBus>();
-                        var busStop = new Stop(stopName, incomingBuses);
+                        var busStop = new Stop(stopName, incomingBuses, busStopName, zone);
                         return busStop;
                     }
                     else
@@ -60,9 +60,9 @@ namespace STCP_API.Models.Clients
                 else
                 {
                     var incomingBuses = new List<IncomingBus>();
-                    incomingBuses = FindIncomingBuses(resultsCheck.OuterHtml);
+                    incomingBuses = ParseIncomingBuses(resultsCheck.OuterHtml);
 
-                    var busStop = new Stop(stopName, incomingBuses);
+                    var busStop = new Stop(stopName, incomingBuses, busStopName, zone);
 
                     return busStop;
                 }
@@ -74,7 +74,7 @@ namespace STCP_API.Models.Clients
         }
 
         // TO-DO Redo class to use HTML parser
-        private static List<IncomingBus> FindIncomingBuses(string htmlTable)
+        private static List<IncomingBus> ParseIncomingBuses(string htmlTable)
         {
             var incomingBuses = new List<IncomingBus>();
 

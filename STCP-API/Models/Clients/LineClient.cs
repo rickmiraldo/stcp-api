@@ -1,8 +1,14 @@
 ﻿using HtmlAgilityPack;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using STCP_API.Models.Entities;
+using STCP_API.Models.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace STCP_API.Models.Clients
 {
@@ -10,22 +16,45 @@ namespace STCP_API.Models.Clients
     {
         private const string stcpEndpoint = "https://www.stcp.pt/pt/viajar/linhas/?linha=";
 
-        //public static async Task<Line> GetAllStopsFromLine(string lineNumber)
-        //{
-        //    HttpClient client = new HttpClient();
-        //    var response = await client.GetAsync(stcpEndpoint + lineNumber);
+        private const string resultsFilter = "(//div[contains(@id,'bus-stop-results')])";
 
-        //    // Check if page returned HTTP code 200
-        //    if (response.StatusCode != System.Net.HttpStatusCode.OK)
-        //    {
-        //        throw new HttpRequestException("Error reading page: " + (int)response.StatusCode + " " + response.StatusCode.ToString());
-        //    }
+        public static string GetStopsFromLine(string lineNumber)
+            // TO-DO Change return type to Line
+        {
+            var co = new ChromeOptions();
+            co.AddArgument("headless");
+            co.AcceptInsecureCertificates = true;
+            co.PageLoadStrategy = PageLoadStrategy.Normal;
 
-        //    var pageContents = await response.Content.ReadAsStringAsync();
+            using (var driver = new ChromeDriver(co))
+            {
+                try
+                {
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                    driver.Navigate().GoToUrl(stcpEndpoint + lineNumber);
+                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
-        //    HtmlDocument pageDocument = new HtmlDocument();
-        //    pageDocument.LoadHtml(pageContents);
+                    wait.Until(wt => !string.IsNullOrWhiteSpace(wt.FindElement(By.CssSelector("#bus-stop-results > table > tbody > tr:nth-child(1) > th.paragem")).Text));
 
-        //}
+                    var resultString = driver.FindElementByXPath(resultsFilter).GetAttribute("outerHTML");
+
+                    driver.Close();
+
+                    if (resultString == null)
+                    {
+                        throw new HttpRequestException("Error reading page: No results found!");
+                    }
+
+
+
+
+                    return resultString;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
     }
 }

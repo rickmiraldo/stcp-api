@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using STCP_API.Models.Clients;
 using System.Threading.Tasks;
 
 namespace STCP_API.Controllers
@@ -9,9 +10,10 @@ namespace STCP_API.Controllers
     {
         // GET line/{lineNumber}
         [HttpGet("{lineNumber}")]
-        public async Task<IActionResult> GetAllStopsFromLine(string lineNumber)
+        public IActionResult GetStopsFromLine(string lineNumber)
         {
-            return View();
+            var result = LineClient.GetStopsFromLine(lineNumber);
+            return Ok(result);
         }
     }
 }

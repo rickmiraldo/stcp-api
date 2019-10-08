@@ -40,17 +40,32 @@ namespace STCP_API.Models.Clients
             {
                 if (resultsCheck == null)
                 {
-                    // Check for warning messags on page
+                    // Check for warning messages on page
                     var warningCheck = pageDocument.DocumentNode.SelectSingleNode(warningFilter).InnerText;
-                    FilterWarning(warningCheck, stopName);
-                    throw new InvalidTableException(stopName);
+                    if (warningCheck.Contains(invalidStopMessage))
+                    {
+                        throw new InvalidBusStopNameException(stopName);
+                    }
+                    else if (warningCheck.Contains(noBusesMessage))
+                    {
+                        var incomingBuses = new List<IncomingBus>();
+                        var busStop = new Stop(stopName, incomingBuses);
+                        return busStop;
+                    }
+                    else
+                    {
+                        throw new InvalidTableException(stopName);
+                    }
                 }
-                var incomingBuses = new List<IncomingBus>();
-                incomingBuses = FindIncomingBuses(resultsCheck.OuterHtml);
+                else
+                {
+                    var incomingBuses = new List<IncomingBus>();
+                    incomingBuses = FindIncomingBuses(resultsCheck.OuterHtml);
 
-                var busStop = new Stop(stopName, incomingBuses);
+                    var busStop = new Stop(stopName, incomingBuses);
 
-                return busStop;
+                    return busStop;
+                }
             }
             catch (Exception ex)
             {
@@ -58,18 +73,7 @@ namespace STCP_API.Models.Clients
             }
         }
 
-        private static void FilterWarning(string warningCheck, string stopName)
-        {
-            if (warningCheck.Contains(invalidStopMessage))
-            {
-                throw new InvalidBusStopNameException(stopName);
-            }
-            else if (warningCheck.Contains(noBusesMessage))
-            {
-                throw new NoBusesException(stopName);
-            }
-        }
-
+        // TO-DO Redo class to use HTML parser
         private static List<IncomingBus> FindIncomingBuses(string htmlTable)
         {
             var incomingBuses = new List<IncomingBus>();

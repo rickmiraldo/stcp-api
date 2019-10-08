@@ -10,9 +10,17 @@ namespace STCP_API.Controllers
     {
         // GET line/{lineNumber}
         [HttpGet("{lineNumber}")]
-        public IActionResult GetStopsFromLine(string lineNumber)
+        public async Task<IActionResult> GetStopsFromLine(string lineNumber)
         {
-            var result = LineClient.GetStopsFromLine(lineNumber);
+            var result = await LineClient.GetStopsFromLine(lineNumber);
+            return Ok(result);
+        }
+
+        // GET /line/full/{lineNumber}
+        [HttpGet("full/{lineNumber}")]
+        public async Task<IActionResult> GetStopsAndBusesFromLine(string lineNumber)
+        {
+            var result = await LineClient.GetStopsFromLine(lineNumber, true);
             return Ok(result);
         }
     }

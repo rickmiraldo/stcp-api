@@ -18,7 +18,7 @@ namespace STCP_API.Models.Clients
 
         private const string resultsFilter = "(//div[contains(@id,'bus-stop-results')])";
 
-        public static string GetStopsFromLine(string lineNumber)
+        public static async Task<Line> GetStopsFromLine(string lineNumber, bool alsoCheckIncomingBuses = false)
             // TO-DO Change return type to Line
         {
             var co = new ChromeOptions();
@@ -37,6 +37,7 @@ namespace STCP_API.Models.Clients
                     wait.Until(wt => !string.IsNullOrWhiteSpace(wt.FindElement(By.CssSelector("#bus-stop-results > table > tbody > tr:nth-child(1) > th.paragem")).Text));
 
                     var resultString = driver.FindElementByXPath(resultsFilter).GetAttribute("outerHTML");
+                    var lineDirection = driver.FindElementByXPath("/html/body/div[3]/div[1]/div[1]/table/tbody/tr/td/div/div[1]/div[1]/div[2]/div[2]").Text;
 
                     driver.Close();
 
@@ -45,16 +46,59 @@ namespace STCP_API.Models.Clients
                         throw new HttpRequestException("Error reading page: No results found!");
                     }
 
+                    var busStops = new List<Stop>();
+                    busStops = await ParseLineStops(resultString, alsoCheckIncomingBuses);
 
+                    var line = new Line(lineNumber, lineDirection, busStops);
 
-
-                    return resultString;
+                    return line;
                 }
                 catch (Exception ex)
                 {
                     throw ex;
                 }
             }
+        }
+
+        private static async Task<List<Stop>> ParseLineStops(string htmlTable, bool alsoCheckIncomingBuses = false)
+        {
+            var stops = new List<Stop>();
+
+            // Get first zone
+            var splitFirstZone = htmlTable.Split("<span>");
+            string zone = splitFirstZone[1].Substring(0, splitFirstZone[1].IndexOf('<'));
+
+            var splitBusLine = htmlTable.Split("bus-line");
+
+            for (int i = 1; i < splitBusLine.Length; i++)
+            {
+                var splitTemp = splitBusLine[i].Split("paragem=");
+                var splitName = splitTemp[1].Split('>');
+                string stopName = splitName[1].Substring(0, splitName[1].IndexOf('<'));
+
+                var splitStopId = splitTemp[2].Split('>');
+                string stopId = splitStopId[1].Substring(0, splitStopId[1].IndexOf('<'));
+
+                // Update if there's a new zone
+                if (splitTemp[2].Contains("<span>"))
+                {
+                    var splitZone = splitTemp[2].Split("<span>");
+                    zone = splitZone[1].Substring(0, splitZone[1].IndexOf('<'));
+                }
+
+                // TO-DO Add boolean to check for incoming buses if needed
+                var buses = new List<IncomingBus>();
+
+                if (alsoCheckIncomingBuses)
+                {
+                    var stopNextBuses = await StopClient.GetNextBuses(stopId);
+                    buses = stopNextBuses.IncomingBuses;
+                }
+
+                var stop = new Stop(stopId, buses, stopName, zone);
+                stops.Add(stop);
+            }
+            return stops;
         }
     }
 }

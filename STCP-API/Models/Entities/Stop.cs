@@ -6,10 +6,10 @@ namespace STCP_API.Models.Entities
     public class Stop
     {
         public string BusStopName { get; private set; }
-        public string? Zone { get; set; }
-        public List<IncomingBus>? IncomingBuses { get; set; }
+        public string Zone { get; set; }
+        public List<IncomingBus> IncomingBuses { get; set; }
 
-        public Stop(string busStopName, List<IncomingBus> incomingBuses, string? zone = null)
+        public Stop(string busStopName, List<IncomingBus> incomingBuses, string zone = "")
         {
             BusStopName = busStopName;
             Zone = zone;
@@ -21,7 +21,7 @@ namespace STCP_API.Models.Entities
             StringBuilder sb = new StringBuilder();
             sb.Append(BusStopName);
 
-            if (Zone != null)
+            if (!string.IsNullOrEmpty(Zone))
             {
                 sb.Append(" (");
                 sb.Append(Zone);

@@ -34,7 +34,7 @@ namespace STCP_API.Models.Entities
 
             sb.Append("\r\n==========\r\n");
 
-            if (IncomingBuses == null)
+            if (IncomingBuses.Count == 0)
             {
                 sb.Append("Incoming buses unavailable!");
             }

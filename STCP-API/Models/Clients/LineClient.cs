@@ -15,12 +15,16 @@ namespace STCP_API.Models.Clients
     public static class LineClient
     {
         private const string stcpEndpoint = "https://www.stcp.pt/pt/viajar/linhas/?linha=";
+        private const string stcpEndpoint2 = "&sentido=";
+        private const string stcpEndpoint3 = "&t=horarios";
 
         private const string resultsFilter = "(//div[contains(@id,'bus-stop-results')])";
 
-        public static async Task<Line> GetStopsFromLine(string lineNumber, bool alsoCheckIncomingBuses = false)
-            // TO-DO Change return type to Line
+        public static async Task<Line> GetStopsFromLine(string lineNumber, string direction, string getIncomingBuses)
         {
+            bool alsoCheckIncomingBuses = getIncomingBuses.Equals("full") ? true : false;
+            string sentidoConsulta = direction.Equals("1") ? "1" : "0";
+            
             var co = new ChromeOptions();
             co.AddArgument("headless");
             co.AcceptInsecureCertificates = true;
@@ -31,17 +35,21 @@ namespace STCP_API.Models.Clients
                 try
                 {
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-                    driver.Navigate().GoToUrl(stcpEndpoint + lineNumber);
+                    driver.Navigate().GoToUrl(stcpEndpoint + lineNumber + stcpEndpoint2 + sentidoConsulta + stcpEndpoint3);
                     var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
                     wait.Until(wt => !string.IsNullOrWhiteSpace(wt.FindElement(By.CssSelector("#bus-stop-results > table > tbody > tr:nth-child(1) > th.paragem")).Text));
 
                     var resultString = driver.FindElementByXPath(resultsFilter).GetAttribute("outerHTML");
-                    var lineDirection = driver.FindElementByXPath("/html/body/div[3]/div[1]/div[1]/table/tbody/tr/td/div/div[1]/div[1]/div[2]/div[2]").Text;
+                    var lineDirection = driver.FindElementByXPath("/html/body/div[3]/div[1]/div[1]/table/tbody/tr/td/div/div[1]/div[1]/div/div[2]").Text;
 
                     driver.Close();
 
-                    if (resultString == null)
+                    if (string.IsNullOrEmpty(lineDirection))
+                    {
+                        throw new InvalidLineNumberException(lineNumber);
+                    }
+                    else if (string.IsNullOrEmpty(resultString))
                     {
                         throw new HttpRequestException("Error reading page: No results found!");
                     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using STCP_API.Models.Clients;
+using System;
 using System.Threading.Tasks;
 
 namespace STCP_API.Controllers
@@ -8,20 +9,20 @@ namespace STCP_API.Controllers
     [Route("[controller]")]
     public class LineController : Controller
     {
-        // GET line/{lineNumber}
-        [HttpGet("{lineNumber}")]
-        public async Task<IActionResult> GetStopsFromLine(string lineNumber)
+        // GET line/{lineNumber}/{getIncoming?}
+        [HttpGet("{lineNumber}/{direction?}/{getIncoming?}")]
+        public async Task<IActionResult> GetStopsFromLine(string lineNumber, string direction = "0", string getIncoming = "")
         {
-            var result = await LineClient.GetStopsFromLine(lineNumber);
-            return Ok(result);
-        }
-
-        // GET /line/full/{lineNumber}
-        [HttpGet("full/{lineNumber}")]
-        public async Task<IActionResult> GetStopsAndBusesFromLine(string lineNumber)
-        {
-            var result = await LineClient.GetStopsFromLine(lineNumber, true);
-            return Ok(result);
+            try
+            {
+                var result = await LineClient.GetStopsFromLine(lineNumber, direction, getIncoming);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
     }
 }

@@ -9,7 +9,7 @@ namespace STCP_API.Controllers
     [Route("[controller]")]
     public class LineController : Controller
     {
-        // GET line/{lineNumber}/{getIncoming?}
+        // GET line/{lineNumber}/{direction?}/{getIncoming?}
         [HttpGet("{lineNumber}/{direction?}/{getIncoming?}")]
         public async Task<IActionResult> GetStopsFromLine(string lineNumber, string direction = "0", string getIncoming = "")
         {

@@ -77,9 +77,7 @@ namespace STCP_API.Models.Clients
         {
             var stops = new List<Stop>();
 
-            // Get first zone
-            var splitFirstZone = htmlTable.Split("<span>");
-            string zone = splitFirstZone[1].Substring(0, splitFirstZone[1].IndexOf('<'));
+            string zone = "";
 
             var splitBusLine = htmlTable.Split("bus-line");
 

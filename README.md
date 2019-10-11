@@ -21,9 +21,11 @@ To get all stops from a line, where `<number>` is the line number such as `206` 
 ## Examples
 
 ```
-stop/206
-stop/3M
+stop/HSJ6
+stop/BLM
+stop/C24A5
 line/206
+line/602/0
 line/505/1
 line/300/0/full
 line/901/1/full

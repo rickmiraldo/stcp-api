@@ -14,9 +14,11 @@ Built with .Net Core 3.
 
 To get all buses from a stop, where `<code>` is the bus stop code such as CMIC1 or LION1.
 
-`line/<number>/[0|1]/[full]`
+`line/<number>/[0|1]/[full|filter]`
 
-To get all stops from a line, where `<number>` is the line number such as `206` or `3M`. The optional number `0` or `1` indicates the line direction and it defaults to `0`. The final optional parameter if set to `full` gets all buses from all stops within that line and it defaults to blank.
+To get all stops from a line, where `<number>` is the line number such as `206` or `3M`.
+The optional number `0` or `1` indicates the line direction and it defaults to `0`.
+The final optional parameter, if set to `full`, gets all buses from all stops within that line and it defaults to blank. If set to `filter` gets only the buses from the particular line you're searching.
 
 ## Examples
 
@@ -29,6 +31,7 @@ line/602/0
 line/505/1
 line/300/0/full
 line/901/1/full
+line/3M/1/filter
 ```
 
 ## Credits

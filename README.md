@@ -18,6 +18,17 @@ To get all buses from a stop, where `<code>` is the bus stop code such as CMIC1 
 
 To get all stops from a line, where `<number>` is the line number such as `206` or `3M`. The optional number `0` or `1` indicates the line direction and it defaults to `0`. The final optional parameter if set to `full` gets all buses from all stops within that line and it defaults to blank.
 
+## Examples
+
+```
+stop/206
+stop/3M
+line/206
+line/505/1
+line/300/0/full
+line/901/1/full
+```
+
 ## Credits
 
  * Using `HtmlAgilityPack` from `zzzprojects` | [GitHub link](https://github.com/zzzprojects/html-agility-pack)

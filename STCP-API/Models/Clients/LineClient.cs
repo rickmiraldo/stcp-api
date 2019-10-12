@@ -115,13 +115,13 @@ namespace STCP_API.Models.Clients
                                 toBeRemoved.Add(incomingBus);
                             }
                             // Exception in line 505 stop LION1 where both directions stop at the same stop - Do a manual check
-                            if ((lineNumberToFilter == "505") || (stopId == "LION1"))
+                            if ((lineNumberToFilter == "505") && (stopId == "LION1"))
                             {
-                                if ((direction == "0") || (incomingBus.LineName == Line505StopLion1Direction1BusName))
+                                if ((direction == "0") && (incomingBus.LineName == Line505StopLion1Direction1BusName))
                                 {
                                     toBeRemoved.Add(incomingBus);
                                 }
-                                else if ((direction == "1") || (incomingBus.LineName == Line505StopLion1Direction0BusName))
+                                else if ((direction == "1") && (incomingBus.LineName == Line505StopLion1Direction0BusName))
                                 {
                                     toBeRemoved.Add(incomingBus);
                                 }

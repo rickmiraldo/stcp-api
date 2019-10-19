@@ -10,18 +10,18 @@ namespace STCP_API.Models.Clients
 {
     public static class StopClient
     {
-        private const string stcpEndpoint = "https://www.stcp.pt/pt/itinerarium/soapclient.php?codigo=";
+        private const string StcpEndpoint = "https://www.stcp.pt/pt/itinerarium/soapclient.php?codigo=";
 
-        private const string resultsFilter = "(//table[contains(@id,'smsBusResults')])[1]";
-        private const string warningFilter = "(//div[contains(@class,'msgBox warning')]//span)";
+        private const string ResultsFilter = "(//table[contains(@id,'smsBusResults')])[1]";
+        private const string WarningFilter = "(//div[contains(@class,'msgBox warning')]//span)";
 
-        private const string invalidStopMessage = "Por favor, utilize o codigo SMSBUS indicado na placa da paragem";
-        private const string noBusesMessage = "Nao ha autocarros previstos para a paragem indicada nos proximos 60 minutos";
+        private const string InvalidStopMessage = "Por favor, utilize o codigo SMSBUS indicado na placa da paragem";
+        private const string NoBusesMessage = "Nao ha autocarros previstos para a paragem indicada nos proximos 60 minutos";
 
         public static async Task<Stop> GetNextBuses(string stopName, string busStopName = "", string zone = "")
         {
             HttpClient client = new HttpClient();
-            var response = await client.GetAsync(stcpEndpoint + stopName);
+            var response = await client.GetAsync(StcpEndpoint + stopName);
 
             // Check if page returned HTTP code 200
             if (response.StatusCode != System.Net.HttpStatusCode.OK)
@@ -34,19 +34,19 @@ namespace STCP_API.Models.Clients
             HtmlDocument pageDocument = new HtmlDocument();
             pageDocument.LoadHtml(pageContents);
 
-            var resultsCheck = pageDocument.DocumentNode.SelectSingleNode(resultsFilter);
+            var resultsCheck = pageDocument.DocumentNode.SelectSingleNode(ResultsFilter);
 
             try
             {
                 if (resultsCheck == null)
                 {
                     // Check for warning messages on page
-                    var warningCheck = pageDocument.DocumentNode.SelectSingleNode(warningFilter).InnerText;
-                    if (warningCheck.Contains(invalidStopMessage))
+                    var warningCheck = pageDocument.DocumentNode.SelectSingleNode(WarningFilter).InnerText;
+                    if (warningCheck.Contains(InvalidStopMessage))
                     {
                         throw new InvalidBusStopNameException(stopName);
                     }
-                    else if (warningCheck.Contains(noBusesMessage))
+                    else if (warningCheck.Contains(NoBusesMessage))
                     {
                         var incomingBuses = new List<IncomingBus>();
                         var busStop = new Stop(stopName, incomingBuses, busStopName, zone);

@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium;
+﻿using HtmlAgilityPack;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using STCP_API.Models.Entities;
@@ -12,24 +13,47 @@ namespace STCP_API.Models.Clients
 {
     public static class LineClient
     {
-        private const string StcpEndpoint = "https://www.stcp.pt/pt/viajar/linhas/?linha=";
-        private const string StcpEndpoint2 = "&sentido=";
-        private const string StcpEndpoint3 = "&t=horarios";
+        private const string FilterIncomingBusesKeyword = "filter";
+        private const string FullBusesKeyword = "full";
+        private const string NoIncomingBusesKeyword = "";
 
-        private const string FilterKeyword = "filter";
-        private const string FullKeyword = "full";
-
-        private const string Line505StopLion1Direction0BusName = ""; // TO-DO Get bus name
-        private const string Line505StopLion1Direction1BusName = "H.S.JOÃO CIR";
-
-        private const string ResultsFilter = "(//div[contains(@id,'bus-stop-results')])";
+        private const string MainBusTripKeyword = "0";
+        private const string ReturnBusTripKeyword = "1";
 
         public static async Task<Line> GetStopsFromLine(string lineNumber, string direction, string getIncomingBuses)
         {
-            bool alsoCheckIncomingBuses = (getIncomingBuses.Equals(FullKeyword) || getIncomingBuses.Equals(FilterKeyword)) ? true : false;
-            bool filterUnwantedLines = getIncomingBuses.Equals(FilterKeyword) ? true : false;
-            string directionToCheck = direction.Equals("1") ? "1" : "0";
-            
+            const string stcpEndpoint = "https://www.stcp.pt/pt/viajar/linhas/?linha=";
+            const string stcpEndpoint2 = "&sentido=";
+            const string stcpEndpoint3 = "&t=horarios";
+
+            const string resultsFilter = "(//div[contains(@id,'bus-stop-results')])";
+
+            // Check for these "wrong" line numbers
+            switch (lineNumber)
+            {
+                case "700_V94":
+                    lineNumber = "V94";
+                    break;
+                case "ZC":
+                    lineNumber = "107";
+                    break;
+                case "ZR":
+                    lineNumber = "103";
+                    break;
+                case "ZM":
+                    lineNumber = "104";
+                    break;
+                case "ZF":
+                    lineNumber = "106";
+                    break;
+                default:
+                    break;
+            }
+
+            bool alsoCheckIncomingBuses = (getIncomingBuses.Equals(FullBusesKeyword) || getIncomingBuses.Equals(FilterIncomingBusesKeyword)) ? true : false;
+            bool filterUnwantedLines = getIncomingBuses.Equals(FilterIncomingBusesKeyword) ? true : false;
+            string directionToCheck = direction.Equals(ReturnBusTripKeyword) ? ReturnBusTripKeyword : MainBusTripKeyword;
+
             var co = new ChromeOptions();
             co.AddArgument("headless");
             co.AcceptInsecureCertificates = true;
@@ -40,12 +64,12 @@ namespace STCP_API.Models.Clients
                 try
                 {
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-                    driver.Navigate().GoToUrl(StcpEndpoint + lineNumber + StcpEndpoint2 + directionToCheck + StcpEndpoint3);
+                    driver.Navigate().GoToUrl(stcpEndpoint + lineNumber + stcpEndpoint2 + directionToCheck + stcpEndpoint3);
                     var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
                     wait.Until(wt => !string.IsNullOrWhiteSpace(wt.FindElement(By.CssSelector("#bus-stop-results > table > tbody > tr:nth-child(1) > th.paragem")).Text));
 
-                    var resultString = driver.FindElementByXPath(ResultsFilter).GetAttribute("outerHTML");
+                    var resultString = driver.FindElementByXPath(resultsFilter).GetAttribute("outerHTML");
                     var lineDirection = driver.FindElementByXPath("/html/body/div[3]/div[1]/div[1]/table/tbody/tr/td/div/div[1]/div[1]/div/div[2]").Text;
 
                     driver.Close();
@@ -73,8 +97,53 @@ namespace STCP_API.Models.Clients
             }
         }
 
+        public static async Task<IEnumerable<Line>> GetAllLines(string getStops)
+        {
+            const string allLinesEndpoint = "https://www.stcp.pt/pt/viajar/linhas/";
+            const string resultsFilter = "(//*[@id='viajar_linha'])";
+
+            bool getAllStops = getStops.Equals("stops") ? true : false;
+
+            var co = new ChromeOptions();
+            co.AddArgument("headless");
+            co.AcceptInsecureCertificates = true;
+            co.PageLoadStrategy = PageLoadStrategy.Normal;
+
+            using (var driver = new ChromeDriver(co))
+            {
+                try
+                {
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                    driver.Navigate().GoToUrl(allLinesEndpoint);
+                    var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+
+                    wait.Until(wt => !string.IsNullOrWhiteSpace(wt.FindElement(By.CssSelector("body > div.divGeralContent > div.divContentCenter > div.content-padding > table > tbody > tr > td > div > div.floatLeft > div.panel-linha-sentido > div.title")).Text));
+
+                    var resultString = driver.FindElementByXPath(resultsFilter).GetAttribute("outerHTML");
+
+                    driver.Close();
+
+                    if (string.IsNullOrEmpty(resultString))
+                    {
+                        throw new HttpRequestException("Error reading page: No results found!");
+                    }
+
+                    var result = await ParseAllLines(resultString, getAllStops);
+
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+
         private static async Task<List<Stop>> ParseLineStops(string htmlTable, bool alsoCheckIncomingBuses, bool filterUnwantedLines, string lineNumberToFilter, string direction)
         {
+            const string line505StopLion1Direction0BusName = "MAT. MERCADO";
+            const string line505StopLion1Direction1BusName = "H.S.JOÃO CIR";
+
             var stops = new List<Stop>();
 
             string zone = "";
@@ -117,11 +186,11 @@ namespace STCP_API.Models.Clients
                             // Exception in line 505 stop LION1 where both directions stop at the same stop - Do a manual check
                             if ((lineNumberToFilter == "505") && (stopId == "LION1"))
                             {
-                                if ((direction == "0") && (incomingBus.LineName == Line505StopLion1Direction1BusName))
+                                if ((direction == "0") && (incomingBus.LineName == line505StopLion1Direction1BusName))
                                 {
                                     toBeRemoved.Add(incomingBus);
                                 }
-                                else if ((direction == "1") && (incomingBus.LineName == Line505StopLion1Direction0BusName))
+                                else if ((direction == "1") && (incomingBus.LineName == line505StopLion1Direction0BusName))
                                 {
                                     toBeRemoved.Add(incomingBus);
                                 }
@@ -140,6 +209,40 @@ namespace STCP_API.Models.Clients
                 stops.Add(stop);
             }
             return stops;
+        }
+
+        private static async Task<List<Line>> ParseAllLines(string htmlTable, bool getStops)
+        {
+            var splitTemp = htmlTable.Split("value=");
+
+            List<Line> lines = new List<Line>();
+
+            for (int i = 1; i < splitTemp.Length; i++)
+            {
+                var splitNumber = splitTemp[i].Split('>');
+                var lineNumber = splitNumber[1].Substring(0, splitNumber[1].IndexOf(' '));
+                
+                List<Stop> stops = new List<Stop>();
+                string lineName = "";
+
+                if (getStops)
+                {
+                    Line fullLine = await GetStopsFromLine(lineNumber, MainBusTripKeyword, NoIncomingBusesKeyword);
+                    lineName = fullLine.Direction;
+                    stops = fullLine.Stops;
+                }
+                else
+                {
+                    var splitName = splitTemp[i].Split("- ", 2);
+                    lineName = splitName[1].Substring(0, splitName[1].IndexOf('<'));
+                }
+
+                Line line = new Line(lineNumber, lineName, stops);
+
+                lines.Add(line);
+            }
+
+            return lines;
         }
     }
 }

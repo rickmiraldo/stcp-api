@@ -12,6 +12,8 @@ namespace STCP_API.Controllers
     public class LineController : Controller
     {
         // GET line/{lineNumber}/{direction?}/{getIncoming?}
+        // direction = "0" | "1"
+        // getIncoming = "" | "full" | "filter"
         [HttpGet("{lineNumber}/{direction?}/{getIncoming?}")]
         public async Task<IActionResult> GetStopsFromLine(string lineNumber, string direction = "0", string getIncoming = "")
         {
@@ -28,6 +30,7 @@ namespace STCP_API.Controllers
         }
 
         // GET line/all/{getStops?}
+        // getStops = "" | "stops"
         [HttpGet("all/{getStops?}")]
         public async Task<IActionResult> GetAllLines(string getStops = "")
         {

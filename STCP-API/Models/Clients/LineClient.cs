@@ -16,8 +16,8 @@ namespace STCP_API.Models.Clients
         private const string FullBusesKeyword = "full";
         private const string NoIncomingBusesKeyword = "";
 
-        private const string MainBusTripKeyword = "0";
-        private const string ReturnBusTripKeyword = "1";
+        private const string OutwardTripKeyword = "0";
+        private const string ReturnTripKeyword = "1";
 
         public static async Task<Line> GetStopsFromLine(string lineNumber, string direction, string getIncomingBuses)
         {
@@ -51,7 +51,7 @@ namespace STCP_API.Models.Clients
 
             bool alsoCheckIncomingBuses = (getIncomingBuses.Equals(FullBusesKeyword) || getIncomingBuses.Equals(FilterIncomingBusesKeyword)) ? true : false;
             bool filterUnwantedLines = getIncomingBuses.Equals(FilterIncomingBusesKeyword) ? true : false;
-            string directionToCheck = direction.Equals(ReturnBusTripKeyword) ? ReturnBusTripKeyword : MainBusTripKeyword;
+            string directionToCheck = direction.Equals(ReturnTripKeyword) ? ReturnTripKeyword : OutwardTripKeyword;
 
             var co = new ChromeOptions();
             co.AddArgument("headless");
@@ -185,11 +185,11 @@ namespace STCP_API.Models.Clients
                             // Exception in line 505 stop LION1 where both directions stop at the same stop - Do a manual check
                             if ((lineNumberToFilter == "505") && (stopId == "LION1"))
                             {
-                                if ((direction == "0") && (incomingBus.LineName == line505StopLion1Direction1BusName))
+                                if ((direction == "0") && (incomingBus.Destination == line505StopLion1Direction1BusName))
                                 {
                                     toBeRemoved.Add(incomingBus);
                                 }
-                                else if ((direction == "1") && (incomingBus.LineName == line505StopLion1Direction0BusName))
+                                else if ((direction == "1") && (incomingBus.Destination == line505StopLion1Direction0BusName))
                                 {
                                     toBeRemoved.Add(incomingBus);
                                 }
@@ -222,21 +222,21 @@ namespace STCP_API.Models.Clients
                 var lineNumber = splitNumber[1].Substring(0, splitNumber[1].IndexOf(' '));
                 
                 List<Stop> stops = new List<Stop>();
-                string lineName = "";
+                string lineDirection = "";
 
                 if (getStops)
                 {
-                    Line fullLine = await GetStopsFromLine(lineNumber, MainBusTripKeyword, NoIncomingBusesKeyword);
-                    lineName = fullLine.Direction;
+                    Line fullLine = await GetStopsFromLine(lineNumber, OutwardTripKeyword, NoIncomingBusesKeyword);
+                    lineDirection = fullLine.LineDirection;
                     stops = fullLine.Stops;
                 }
                 else
                 {
                     var splitName = splitTemp[i].Split("- ", 2);
-                    lineName = splitName[1].Substring(0, splitName[1].IndexOf('<'));
+                    lineDirection = splitName[1].Substring(0, splitName[1].IndexOf('<'));
                 }
 
-                Line line = new Line(lineNumber, lineName, stops);
+                Line line = new Line(lineNumber, lineDirection, stops);
 
                 lines.Add(line);
             }

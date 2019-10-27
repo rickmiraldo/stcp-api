@@ -87,7 +87,7 @@ namespace STCP_API.Models.Clients
 
                 // Second filter - Get line name
                 var splitName = splitNumber[i].Split("&nbsp;", 2);
-                var lineName = splitName[1].Substring(0, splitName[1].IndexOf('<')).TrimEnd().TrimEnd('-').TrimEnd();
+                var destination = splitName[1].Substring(0, splitName[1].IndexOf('<')).TrimEnd().TrimEnd('-').TrimEnd();
 
                 // Third filter - Get ETA
                 var splitTime = splitName[1].Split("<i>", 2);
@@ -123,7 +123,7 @@ namespace STCP_API.Models.Clients
                     waitTime = int.Parse(splitWait[1].Substring(0, splitWait[1].IndexOf('m')));
                 }
 
-                var bus = new IncomingBus(lineNumber, lineName, time, waitTime);
+                var bus = new IncomingBus(lineNumber, destination, time, waitTime);
 
                 incomingBuses.Add(bus);
             }

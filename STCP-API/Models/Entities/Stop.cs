@@ -17,37 +17,5 @@ namespace STCP_API.Models.Entities
             Zone = zone;
             IncomingBuses = incomingBuses;
         }
-
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(BusStopId);
-            sb.Append(" - ");
-            sb.Append(BusStopName);
-
-            if (!string.IsNullOrEmpty(Zone))
-            {
-                sb.Append(" (");
-                sb.Append(Zone);
-                sb.Append(")");
-            }
-
-            sb.Append("\r\n==========\r\n");
-
-            if (IncomingBuses.Count == 0)
-            {
-                sb.Append("Incoming buses unavailable!");
-            }
-            else
-            {
-                foreach (var bus in IncomingBuses)
-                {
-                    sb.Append(bus.ToString());
-                    sb.Append("\r\n");
-                }
-            }
-
-            return sb.ToString();
-        }
     }
 }

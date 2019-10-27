@@ -73,7 +73,6 @@ namespace STCP_API.Models.Clients
             }
         }
 
-        // TO-DO Redo class to use HTML parser
         private static List<IncomingBus> ParseIncomingBuses(string htmlTable)
         {
             var incomingBuses = new List<IncomingBus>();

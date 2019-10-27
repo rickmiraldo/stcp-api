@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using STCP_API.Models.Clients;
-using STCP_API.Models.Entities;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace STCP_API.Controllers

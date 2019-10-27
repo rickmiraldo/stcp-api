@@ -28,13 +28,15 @@ namespace STCP_API.Models
                         }
                         else
                         {
+                            LocatedBus busToAdd = null;
                             foreach (var previouslyLocatedBus in locatedLine.LocatedBuses)
                             {
                                 if (!AreSameBus(previouslyLocatedBus, probableBus, line))
                                 {
-                                    locatedLine.LocatedBuses.Add(probableBus);
+                                    busToAdd = probableBus;
                                 }
                             }
+                            if (busToAdd != null) locatedLine.LocatedBuses.Add(busToAdd);
                         }
                     }
                 }
@@ -59,18 +61,7 @@ namespace STCP_API.Models
 
         private static bool AreSameBus(LocatedBus bus1, LocatedBus bus2, Line line)
         {
-            const int toleranceInMinutes = 2;
-
-            var stopId1 = line.Stops.FindIndex(x => x.BusStopId == bus1.NextStopId);
-            var stopId2 = line.Stops.FindIndex(x => x.BusStopId == bus2.NextStopId);
-            var numberOfStopsBetweenBuses = Math.Abs(stopId2 - stopId1);
-
-            bool sameDestination = bus1.Destination.Equals(bus2.Destination);
-
-            bool nearWaitingTime = (bus1.WaitingTime <= (bus2.WaitingTime + (toleranceInMinutes * numberOfStopsBetweenBuses)))
-                    || (bus1.WaitingTime >= (bus2.WaitingTime - (toleranceInMinutes * numberOfStopsBetweenBuses)));
-
-            return sameDestination && nearWaitingTime;
+            return bus1.WaitingTime <= bus2.WaitingTime ? true : false;
         }
     }
 }
